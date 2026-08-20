@@ -1,6 +1,8 @@
 name: Build Android APK
 on:
   push:
+    branches: [android-v0.1-build]
+  pull_request:
     branches: [android-v0.1]
   workflow_dispatch:
 
@@ -9,15 +11,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Restore full V1.10 prototype
+        run: |
+          base64 -d prototype/index.html.gz.b64 | gunzip > app/src/main/assets/index.html
+          test -s app/src/main/assets/index.html
+          grep -q "今日要件" app/src/main/assets/index.html
+          grep -q "財務／費用" app/src/main/assets/index.html
+          grep -q "文件／合約" app/src/main/assets/index.html
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+
       - name: Build debug APK
         run: gradle :app:assembleDebug --stacktrace
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
