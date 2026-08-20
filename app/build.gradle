@@ -1,0 +1,14 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'tw.calvin.communitygovernance'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'tw.calvin.communitygovernance'
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName '0.1'
+    }
+}
