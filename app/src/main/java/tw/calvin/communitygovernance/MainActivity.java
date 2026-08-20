@@ -1,6 +1,8 @@
 package tw.calvin.communitygovernance;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -14,17 +16,34 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         webView = new WebView(this);
         setContentView(webView);
+
         WebSettings s = webView.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
         s.setAllowFileAccess(true);
-        webView.setWebViewClient(new WebViewClient());
+        s.setAllowContentAccess(true);
+
         webView.setWebChromeClient(new WebChromeClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if (url.startsWith("tel:") || url.startsWith("mailto:")) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                    return true;
+                }
+                return false;
+            }
+        });
         webView.loadUrl("file:///android_asset/index.html");
     }
 
     @Override public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) webView.goBack();
-        else super.onBackPressed();
+        webView.evaluateJavascript(
+            "(function(){if(typeof S!=='undefined' && S.cur && S.cur!=='home' && typeof back==='function'){back();return 'handled';}return 'exit';})()",
+            value -> {
+                if (value != null && value.contains("exit")) {
+                    MainActivity.super.onBackPressed();
+                }
+            }
+        );
     }
 }
